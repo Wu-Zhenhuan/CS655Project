@@ -31,18 +31,39 @@ public class Main {
                         new BufferedReader(
                                 new InputStreamReader(System.in))
         ) {
+            System.out.println("Worker has been connected!");
+            System.out.println("Input must be [start char][end char][MD5 Hash of 32 chars].\nType 'exit' to quit.");
             String userInput;
             while ((userInput = stdIn.readLine()) != null) {
-                out.println(userInput);
+                String line = userInput.trim();
+                if (line.equalsIgnoreCase("exit")) {
+                    out.println("exit");
+                    return;
+                }
+                if (line.length() != 34) {
+                    System.err.println("Wrong format!\nInput must be [start char][end char][MD5 Hash of 32 chars].\nType 'exit' to quit.");
+                    continue;
+                }
+                out.println(line);
                 out.flush();
-                System.out.println("Client sent: " + userInput);
-                System.out.println("Waiting for the result...");
-                while (!in.ready()) {
+                System.out.println("Client sent: " + line);
+                System.out.println("Waiting for confirmation from worker...");
+                String confirmation;
+                while ((confirmation = in.readLine())==null) {
 
                 }
-                System.out.println(in.readLine());
-            }
+                System.out.println(confirmation);
+                while ((confirmation = in.readLine())==null) {
 
+                }
+                System.out.println(confirmation);
+                System.out.println("Waiting for result from worker...");
+                String result;
+                while ((result = in.readLine())==null) {
+
+                }
+                System.out.println(result);
+            }
         } catch (Exception e) {
             System.err.println("Echo Client exits at main() due to the following:");
             e.printStackTrace();
