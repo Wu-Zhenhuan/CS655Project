@@ -37,13 +37,11 @@ public abstract class Config {
         System.out.println(invalidArgMsg + argNames);
     }
     // input prompt
-    protected static final String inputPrompt = """
-            Pleaser enter your command:\s
-            info - check the information of the available workers\s
-            del <worker_IP> - remove a worker by specifying its IP\s
-            crack <MD5> - submit a password's MD5 code for the workers to crack\s
-            exit - quit the program
-            """;
+    protected static final String inputPrompt = "Pleaser enter your command:\n" +
+            "info - check the information of the available workers\n" +
+            "del <worker_IP> - remove a worker by specifying its IP\n" +
+            "crack <MD5> - submit a password's MD5 code for the workers to crack\n" +
+            "exit - quit the program";
     // white space
     protected static final String whiteSpace = "\\s+";
     // alphabet
