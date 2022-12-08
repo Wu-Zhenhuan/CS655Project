@@ -9,7 +9,10 @@ import java.net.UnknownHostException;
 public class User {
     public static void main(String[] args) {
         // check the validity of arguments
-        if (args.length != 2) {return;}
+        if (args.length != 2) {
+            System.err.println("Invalid argument. User <manager address> <manager port number>");
+            return;
+        }
         Socket userSocket;
         BufferedReader userInput;
         BufferedReader in;
@@ -36,19 +39,22 @@ public class User {
         String inputLine;
         while (true) {
             try {
-                System.out.println("Input: ");
+                System.out.println(Config.inputPrompt);
                 inputLine = userInput.readLine().trim();
                 out.println(inputLine);
                 out.flush();
-                String managerMsg;
+                // quit the user
+                if (inputLine.equalsIgnoreCase(Config.exitMsg)) {return;}
                 // wait for response
+                String managerMsg;
                 do {managerMsg = in.readLine();} while (managerMsg == null);
                 managerMsg = managerMsg.trim();
-                if (inputLine.equals(Config.infoMsg)) {
-                    managerMsg = managerMsg.replaceAll("@", "\n");
+                // deal with the formatting in case of workers' info
+                if (managerMsg.length() > 4 && managerMsg.startsWith("----")) {
+                    managerMsg = managerMsg.replaceAll(Config.infoDelim, "\n");
                 }
+                // show the manager's response
                 System.out.println("manager response: \n" + managerMsg);
-                if (managerMsg.equalsIgnoreCase("exit")) {return;}
             }
             catch (IOException ioe) {ioe.printStackTrace();}
         }

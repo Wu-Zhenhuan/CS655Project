@@ -35,7 +35,8 @@ public class ConnectionThread extends Thread {
                     String[] command = nextLine.split("\\s+");
                     // exit
                     if (command.length == 1 && nextLine.equalsIgnoreCase(Config.exitMsg)) {
-                        Manager.managerSocket.close();
+                        //Manager.managerSocket.close();
+                        Manager.setUserConnection(null);
                         return;
                     }
                     // show workers' info
@@ -44,27 +45,54 @@ public class ConnectionThread extends Thread {
                         out.flush();
                     }
                     // delete a worker
-                    if (command.length == 2 && command[0].equalsIgnoreCase(Config.delMsg)) {
-
+                    else if (command.length == 2 && command[0].equalsIgnoreCase(Config.delMsg)) {
+                        if (Manager.delWorker(command[1])) {
+                            out.println("deleted " + command[1]);
+                        }
+                        else {
+                            out.println("cannot delete " + command[1]);
+                        }
+                        out.flush();
                     }
                     // submit job to worker(s)
                     else if (command.length == 2 && command[0].equalsIgnoreCase(Config.crackMsg) && command[1].length() == Config.md5Len) {
-                        Manager.submit(command[1]);
+                        // we have workers available
+                        if (Manager.workers.size() > 0) {
+                            Manager.submitJob(command[1]);
+                        }
+                        // tell the user that there is no worker
+                        else {
+                            out.println(Manager.getWorkersInfo(false));
+                            out.flush();
+                        }
                     }
-                    // an answer from a worker
-                    else if (command.length == 2 && command[0].equalsIgnoreCase("ans")) {
-                        Manager.userConnection.out.println("answer from worker: " + command[1]);
+                    // response from a worker: failure
+                    else if (command.length == 3 && command[0].equalsIgnoreCase("ans")) {
+                        System.out.println("failure from worker: " + command[1] + " " + command[2]);
+                    }
+                    // response from a worker: success
+                    else if (command.length == 5 && command[0].equalsIgnoreCase("ans")) {
+                        // tell other workers to stop cracking this password
+                        for (String key : Manager.connections.keySet()) {
+                            Manager.connections.get(key).out.println("stop " + command[2]);
+                            Manager.connections.get(key).out.flush();
+                            System.out.println("stopped " + key);
+                        }
+                        // output the cracked answer
+                        Manager.userConnection.out.println("answer from worker: " + command[1] + " " + command[2] + " " + command[3] + " " + command[4]);
                     }
                     // incoming user
-                    if (command.length == 3 && command[0].equalsIgnoreCase("user")) {
+                    else if (command.length == 3 && command[0].equalsIgnoreCase("user")) {
                         out.println("manager ack user " + command[1] + " " + command[2]);
                         out.flush();
+                        // save this user connection
                         Manager.setUserConnection(this);
                     }
                     // incoming worker
                     else if (command.length == 3 && command[0].equalsIgnoreCase("worker")) {
                         out.println("manager ack worker " + command[1] + " " + command[2]);
                         out.flush();
+                        // save this worker connection
                         Manager.addWorker(command[1], Integer.parseInt(command[2]), this);
                     }
                     else {

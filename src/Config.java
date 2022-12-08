@@ -5,8 +5,8 @@ public abstract class Config {
     protected static final String exitMsg = "exit";
     // show worker info
     protected static final String infoMsg = "info";
-    // add worker
-    protected static final String addMsg = "add";
+    // info delimiter
+    protected static final String infoDelim = "@";
     // delete worker
     protected static final String delMsg = "del";
     // crack password
@@ -20,4 +20,10 @@ public abstract class Config {
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
     };
+    // find the index of a given character in the alphabet
+    public static int getIndex (char ch) {
+        if (('A' <= ch) && (ch <= 'Z')) {return (int) ch - 65;}
+        else if (('a' <= ch) && (ch <= 'z')) {return (int) ch - 71;}
+        else {return -1;}
+    }
 }
