@@ -21,8 +21,7 @@ public class ConnectionThread extends Thread {
             out = new PrintWriter(socket.getOutputStream(), true);
             String workerHostAddress = socket.getInetAddress().getHostAddress();
             int workerPortNum = socket.getPort();
-            System.out.println("connected: " + workerHostAddress + " " + workerPortNum);
-            //Manager.addWorker(workerHostName, workerPortNum, this);
+            Config.log("New connection thread: address: " + workerHostAddress + ", port number: " + workerPortNum);
         }
         catch (IOException ioe) {
             ioe.printStackTrace();
@@ -35,14 +34,23 @@ public class ConnectionThread extends Thread {
                 nextLine = in.readLine();
                 if (nextLine != null) {
                     nextLine = nextLine.trim();
+                    Config.log("Received message: " + nextLine);
                     String[] command = nextLine.split(Config.whiteSpace);
                     // exit
                     if (command.length == 1 && nextLine.equalsIgnoreCase(Config.exitMsg)) {
+                        // tell the workers to exit
+                        for (String keyHost : Manager.connections.keySet()) {
+                            Manager.connections.get(keyHost).out.println(Config.exitMsg);
+                            Manager.connections.get(keyHost).out.flush();
+                            Config.log("Worker exited: " + keyHost);
+                        }
+                        // safe close
                         in.close();
                         out.close();
                         socket.close();
                         Manager.managerSocket.close();
                         Manager.setUserConnection(null);
+                        Config.log("Exited manager.");
                         return;
                     }
                     // show workers' info
@@ -51,16 +59,18 @@ public class ConnectionThread extends Thread {
                         out.flush();
                     }
                     // delete a worker
+                    // {del, IP}
                     else if (command.length == 2 && command[0].equalsIgnoreCase(Config.delMsg)) {
                         if (Manager.delWorker(command[1])) {
-                            out.println("deleted " + command[1]);
+                            out.println("Deleted worker: " + command[1]);
                         }
                         else {
-                            out.println("cannot delete " + command[1]);
+                            out.println("Failed to delete worker: " + command[1]);
                         }
                         out.flush();
                     }
                     // submit job to worker(s)
+                    // {crack, MD5}
                     else if (command.length == 2 && command[0].equalsIgnoreCase(Config.crackMsg) && command[1].length() == Config.md5Len) {
                         // we have workers available
                         if (Manager.workers.size() > 0) {
@@ -68,13 +78,20 @@ public class ConnectionThread extends Thread {
                         }
                         // tell the user that there is no worker
                         else {
+                            Config.log("No workers connected.");
                             out.println(Manager.getWorkersInfo(false));
                             out.flush();
                         }
                     }
+                    // response from a worker: stop thread
+                    // {stop, cypher, IP, port}
+                    else if (command.length == 4 && command[0].equalsIgnoreCase(Config.stopMsg)) {
+                        Config.log("Worker stopped: job: " + command[1] + ", host: " + command[2] + ", port: " + command[3]);
+                    }
                     // response from a worker: failure
-                    else if (command.length == 4 && command[0].equalsIgnoreCase("ans")) {
-                        System.out.println("failure from worker: " + command[1] + " " + command[2] + " " + command[3]);
+                    // {ans, cypher, IP, port}
+                    else if (command.length == 4 && command[0].equalsIgnoreCase(Config.ansMsg)) {
+                        Config.log("Failure from worker: job: " + command[1] + ", host: " + command[2] + ", port: " + command[3]);
                         // count the number of workers who failed to crack this password
                         if (Manager.userConnection.failures.containsKey(command[1])) {
                             Manager.userConnection.failures.put(command[1], Manager.userConnection.failures.get(command[1]) + 1);
@@ -84,42 +101,47 @@ public class ConnectionThread extends Thread {
                         }
                         // if all the workers failed to crack this password, send the message to the user
                         if (Manager.userConnection.failures.get(command[1]) == Manager.workers.size()) {
-                            Manager.userConnection.out.println("unable to crack " + command[1]);
+                            Manager.userConnection.out.println(Config.failMsg + " " + command[1]);
                             Manager.userConnection.out.flush();
                             Manager.userConnection.failures.remove(command[1]);
+                            Config.log("All failed: " + command[1]);
                         }
                     }
                     // response from a worker: success
-                    else if (command.length == 5 && command[0].equalsIgnoreCase("ans")) {
+                    // {ans, plain-text, cypher, IP, port}
+                    else if (command.length == 5 && command[0].equalsIgnoreCase(Config.ansMsg)) {
                         // tell other workers to stop cracking this password
-                        for (String key : Manager.connections.keySet()) {
-                            Manager.connections.get(key).out.println("stop " + command[2]);
-                            Manager.connections.get(key).out.flush();
-                            System.out.println("stopped " + key);
+                        for (String keyHost : Manager.connections.keySet()) {
+                            Manager.connections.get(keyHost).out.println(Config.stopMsg + " " + command[2]);
+                            Manager.connections.get(keyHost).out.flush();
+                            Config.log("Stopped worker: " + keyHost + ", job: " + command[2]);
                         }
                         // output the cracked answer
-                        Manager.userConnection.out.println("answer from worker: " + command[1] + " " + command[2] + " " + command[3] + " " + command[4]);
+                        Manager.userConnection.out.println(Config.ansMsg + " " + command[1] + " " + command[2] + " " + command[3] + " " + command[4]);
                         Manager.userConnection.out.flush();
                     }
                     // incoming user
-                    else if (command.length == 3 && command[0].equalsIgnoreCase("user")) {
-                        out.println("manager ack user " + command[1] + " " + command[2]);
-                        out.flush();
+                    // {user, IP, port}
+                    else if (command.length == 3 && command[0].equalsIgnoreCase(Config.userMsg)) {
                         // save this user connection
                         Manager.setUserConnection(this);
+                        Config.log("Registered user: " + command[1] + ", " + command[2]);
+                        out.println("Manager registered user: " + command[1] + ", " + command[2]);
+                        out.flush();
                     }
                     // incoming worker
-                    else if (command.length == 3 && command[0].equalsIgnoreCase("worker")) {
-                        out.println("manager ack worker " + command[1] + " " + command[2]);
-                        out.flush();
+                    // {worker, IP, port}
+                    else if (command.length == 3 && command[0].equalsIgnoreCase(Config.workerMsg)) {
                         // save this worker connection
                         Manager.addWorker(command[1], Integer.parseInt(command[2]), this);
-                    }
-                    else {
-                        out.println("invalid input");
+                        Config.log("Registered worker: " + command[1] + ", " + command[2]);
+                        out.println("Manager registered worker: " + command[1] + ", " + command[2]);
                         out.flush();
                     }
-                    System.out.println("local print: " + nextLine);
+                    else {
+                        out.println("Invalid input!");
+                        out.flush();
+                    }
                 }
             }
             catch (Exception e) {

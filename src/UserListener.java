@@ -24,16 +24,27 @@ public class UserListener extends Thread {
                 if (managerMsg.startsWith("----")) {
                     managerMsg = managerMsg.replaceAll(Config.infoDelim, "\n");
                 }
-                String msg = "manager response: \n" + managerMsg;
+                String displayedMsg = "Manager response: \n";
                 // record the time taken for cracking one password
-                if (managerMsg.startsWith("answer")) {
-                    String[] segments = managerMsg.split(Config.whiteSpace);
-                    msg += " span: " + (timeNow - User.responseTime.get(segments[4]))/1000000000d + " seconds";
-                    User.responseTime.remove(segments[4]);
+                String[] segments = managerMsg.split(Config.whiteSpace);
+                if (segments.length == 5 && segments[0].equalsIgnoreCase(Config.ansMsg)) {
+                    // {ans, plain-text, cypher, IP, port}
+                    displayedMsg += "Successfully cracked: job: " + segments[2] + ", answer: " + segments[1]
+                            + ", from worker: (" + segments[3] + ", " + segments[4] + "), time-span: "
+                            + (timeNow - User.responseTime.get(segments[2]))/1000000000d + " seconds";
+                    User.responseTime.remove(segments[2]);
+                }
+                else if (segments.length == 2 && segments[0].equalsIgnoreCase(Config.failMsg)) {
+                    displayedMsg += "Unable to crack: " + segments[1] + ", time-span: "
+                            + (timeNow - User.responseTime.get(segments[1]))/1000000000d + " seconds";
+                    User.responseTime.remove(segments[1]);
+                }
+                // ordinary message
+                else {
+                    displayedMsg += managerMsg;
                 }
                 // buffer the manager's messages
-                msgBuffer.add(msg);
-                System.out.println("debug size " + msgBuffer.size());
+                msgBuffer.add(displayedMsg);
                 // show the messages from the manager
                 while (msgBuffer.size() > 0) {
                     System.out.println(msgBuffer.poll());

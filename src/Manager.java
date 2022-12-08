@@ -18,13 +18,13 @@ public class Manager {
     public static void main(String[] args) {
         // check the validity of arguments
         if (args.length != 1) {
-            System.err.println("Invalid argument. Manager <self port number>");
+            Config.argInstruct("Manager", new String[] {"manager_port_number"});
             return;
         }
         // initialize manager socket
         try {
             managerSocket = new ServerSocket(Integer.parseInt(args[0]));
-            System.out.println("Manager socket started, port number: " + args[0]);
+            Config.log("Manager socket started, port number: " + args[0]);
         }
         catch (Exception e) {e.printStackTrace(); return;}
         // initialize hash maps
@@ -49,7 +49,7 @@ public class Manager {
             loadPerWorker++;
         }
         int itr = 0;  // iterate through the alphabet
-        for (String key : connections.keySet()) {
+        for (String hostName : connections.keySet()) {
             char start = Config.ALPHABET[itr];
             char end;
             // the last batch
@@ -61,10 +61,9 @@ public class Manager {
                 end = Config.ALPHABET[itr + loadPerWorker - 1];
             }
             // submit workload
-            connections.get(key).out.println(start + "" + end + "" + md5Code);
-            connections.get(key).out.flush();
-            System.out.println("Workload for " + key + ": " + start + " - " + end);
-            System.out.println("debug: closed? " + connections.get(key).socket.isClosed());
+            connections.get(hostName).out.println(start + "" + end + "" + md5Code);
+            connections.get(hostName).out.flush();
+            Config.log("Submitted workload for " + hostName + ": " + start + " - " + end + ", job: " + md5Code);
             itr += loadPerWorker;
         }
     }
@@ -79,10 +78,11 @@ public class Manager {
             workers.remove(hostName);
             connections.get(hostName).out.println(Config.exitMsg);
             connections.remove(hostName);
+            Config.log("Deleted worker: " + hostName);
             return true;
         }
         else {
-            System.err.println("No such worker to be deleted: " + hostName);
+            Config.log("No such worker to be deleted: " + hostName);
             return false;
         }
     }
@@ -97,12 +97,12 @@ public class Manager {
                 count++;
             }
             info.append("----------------------------------------");
-            if (isShow) {
-                System.out.println(info.toString().replaceAll(Config.infoDelim, "\n"));
-            }
         }
         else {
             info.append("No workers available.");
+        }
+        if (isShow) {
+            System.out.println(info.toString().replaceAll(Config.infoDelim, "\n"));
         }
         return info.toString();
     }

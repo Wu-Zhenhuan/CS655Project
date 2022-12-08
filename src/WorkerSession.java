@@ -34,21 +34,22 @@ public class WorkerSession extends Thread {
     // run the thread
     @Override
     public void run() {
-        System.out.println("First character range: from '" + Config.ALPHABET[start] + "' to '" + Config.ALPHABET[end] + "'");
-        System.out.println("Cypher: " + cypher);
+        Config.log("Start cracking: cypher: " + cypher + ", 1st character range: " + Config.ALPHABET[start] + " - " + Config.ALPHABET[end]);
         answer = crack();
+        // stop thread
         if (!isRun) {
-            System.out.println("stop crack " + cypher);
-            Worker.out.println("ans " + hostAddress + "STOP " + portNum);
+            Config.log("Thread stop: " + cypher);
+            Worker.out.println(Config.stopMsg + " " + cypher + " " + hostAddress + " " + portNum);
         }
+        // output answer
         else {
             if (answer != null) {
-                System.out.println("cracked " + cypher + ": " + answer);
-                Worker.out.println("ans " + answer + " " + cypher + " " + hostAddress + " " + portNum);
+                Config.log("Cracked: " + cypher + " -> " + answer);
+                Worker.out.println(Config.ansMsg + " " + answer + " " + cypher + " " + hostAddress + " " + portNum);
             }
             else {
-                System.out.println("cannot crack " + cypher);
-                Worker.out.println("ans " + cypher + " " + hostAddress + " " + portNum);
+                Config.log("Cannot crack: " + cypher);
+                Worker.out.println(Config.ansMsg + " " + cypher + " " + hostAddress + " " + portNum);
             }
         }
         Worker.out.flush();
