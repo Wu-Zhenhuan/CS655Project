@@ -35,7 +35,10 @@ public class ConnectionThread extends Thread {
                     String[] command = nextLine.split("\\s+");
                     // exit
                     if (command.length == 1 && nextLine.equalsIgnoreCase(Config.exitMsg)) {
-                        //Manager.managerSocket.close();
+                        in.close();
+                        out.close();
+                        socket.close();
+                        Manager.managerSocket.close();
                         Manager.setUserConnection(null);
                         return;
                     }

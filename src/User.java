@@ -7,16 +7,16 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class User {
+    protected static Socket userSocket;
+    protected static BufferedReader userInput;
+    protected static BufferedReader in;
+    protected static PrintWriter out;
     public static void main(String[] args) {
         // check the validity of arguments
         if (args.length != 2) {
             System.err.println("Invalid argument. User <manager address> <manager port number>");
             return;
         }
-        Socket userSocket;
-        BufferedReader userInput;
-        BufferedReader in;
-        PrintWriter out;
         try {
             userSocket = new Socket(args[0], Integer.parseInt(args[1]));
             userInput = new BufferedReader(new InputStreamReader(System.in));
@@ -37,26 +37,24 @@ public class User {
         }
         catch (UnknownHostException uhe) {uhe.printStackTrace(); return;}
         String inputLine;
+        UserListener userListener = new UserListener();
+        userListener.start();
         while (true) {
             try {
                 System.out.println(Config.inputPrompt);
                 inputLine = userInput.readLine().trim();
                 out.println(inputLine);
                 out.flush();
-                // quit the user
-                if (inputLine.equalsIgnoreCase(Config.exitMsg)) {return;}
-                // wait for response
-                String managerMsg;
-                do {managerMsg = in.readLine();} while (managerMsg == null);
-                managerMsg = managerMsg.trim();
-                // deal with the formatting in case of workers' info
-                if (managerMsg.length() > 4 && managerMsg.startsWith("----")) {
-                    managerMsg = managerMsg.replaceAll(Config.infoDelim, "\n");
+                // quit the program
+                if (inputLine.equalsIgnoreCase(Config.exitMsg)) {
+                    in.close();
+                    out.close();
+                    userInput.close();
+                    userSocket.close();
+                    return;
                 }
-                // show the manager's response
-                System.out.println("manager response: \n" + managerMsg);
             }
-            catch (IOException ioe) {ioe.printStackTrace();}
+            catch (IOException ioe) {ioe.printStackTrace(); return;}
         }
     }
 }

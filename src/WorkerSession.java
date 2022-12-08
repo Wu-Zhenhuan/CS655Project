@@ -6,11 +6,7 @@ import java.security.NoSuchAlgorithmException;
 // a worker process thread dedicated to deal with a particular workload
 public class WorkerSession extends Thread {
     // handle the conversion of MD5
-    protected static MessageDigest messageDigest;
-    static {
-        try {messageDigest = MessageDigest.getInstance("MD5");}
-        catch (NoSuchAlgorithmException e) {throw new RuntimeException(e);}
-    }
+    protected MessageDigest messageDigest;
     // the result of cracking
     protected String answer;
     // the MD5 code of the actual password
@@ -25,6 +21,8 @@ public class WorkerSession extends Thread {
     private boolean isRun;
     // constructor
     public WorkerSession(String cypher, int start, int end, String hostAddress, int portNum) {
+        try {messageDigest = MessageDigest.getInstance("MD5");}
+        catch (NoSuchAlgorithmException e) {throw new RuntimeException(e);}
         answer = "";
         this.cypher = cypher.toLowerCase();
         this.start = start;

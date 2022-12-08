@@ -51,6 +51,7 @@ public class Worker {
                 do {managerMsg = in.readLine();} while (managerMsg == null);
                 managerMsg = managerMsg.trim();
                 System.out.println("local print: " + managerMsg);
+                // receive a job
                 if (managerMsg.length() == 34) {
                     String md5Cypher = managerMsg.substring(2);
                     WorkerSession ws = new WorkerSession(md5Cypher, Config.getIndex(managerMsg.charAt(0)),
@@ -60,14 +61,19 @@ public class Worker {
                     ws.start();
                     sessions.put(md5Cypher, ws);
                 }
+                // receive an order to stop a job
                 else if (managerMsg.length() > 4 && managerMsg.substring(0, 4).equalsIgnoreCase("stop")) {
                     String jobCode = managerMsg.substring(5);
-                    System.out.println("DEBUG: " + jobCode);
                     sessions.get(jobCode).kill();
                     sessions.remove(jobCode);
                 }
                 // terminate the worker
-                else if (managerMsg.equalsIgnoreCase(Config.exitMsg)) {return;}
+                else if (managerMsg.equalsIgnoreCase(Config.exitMsg)) {
+                    in.close();
+                    out.close();
+                    workerSocket.close();
+                    return;
+                }
             }
             catch (IOException ioe) {ioe.printStackTrace(); return;}
         }
