@@ -48,7 +48,7 @@ public class WorkerSession extends Thread {
             }
             else {
                 System.out.println("cannot crack " + cypher);
-                Worker.out.println("ans " + hostAddress + " " + portNum);
+                Worker.out.println("ans " + cypher + " " + hostAddress + " " + portNum);
             }
         }
         Worker.out.flush();

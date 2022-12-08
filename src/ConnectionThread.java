@@ -3,13 +3,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class ConnectionThread extends Thread {
     protected Socket socket;
     protected BufferedReader in;
     protected PrintWriter out;
+    protected HashMap<String, Integer> failures;
     public ConnectionThread(Socket socket) {
         this.socket = socket;
+        failures = new HashMap<>();
     }
     @Override
     public void run() {
@@ -32,7 +35,7 @@ public class ConnectionThread extends Thread {
                 nextLine = in.readLine();
                 if (nextLine != null) {
                     nextLine = nextLine.trim();
-                    String[] command = nextLine.split("\\s+");
+                    String[] command = nextLine.split(Config.whiteSpace);
                     // exit
                     if (command.length == 1 && nextLine.equalsIgnoreCase(Config.exitMsg)) {
                         in.close();
@@ -70,8 +73,21 @@ public class ConnectionThread extends Thread {
                         }
                     }
                     // response from a worker: failure
-                    else if (command.length == 3 && command[0].equalsIgnoreCase("ans")) {
-                        System.out.println("failure from worker: " + command[1] + " " + command[2]);
+                    else if (command.length == 4 && command[0].equalsIgnoreCase("ans")) {
+                        System.out.println("failure from worker: " + command[1] + " " + command[2] + " " + command[3]);
+                        // count the number of workers who failed to crack this password
+                        if (Manager.userConnection.failures.containsKey(command[1])) {
+                            Manager.userConnection.failures.put(command[1], Manager.userConnection.failures.get(command[1]) + 1);
+                        }
+                        else {
+                            Manager.userConnection.failures.put(command[1], 1);
+                        }
+                        // if all the workers failed to crack this password, send the message to the user
+                        if (Manager.userConnection.failures.get(command[1]) == Manager.workers.size()) {
+                            Manager.userConnection.out.println("unable to crack " + command[1]);
+                            Manager.userConnection.out.flush();
+                            Manager.userConnection.failures.remove(command[1]);
+                        }
                     }
                     // response from a worker: success
                     else if (command.length == 5 && command[0].equalsIgnoreCase("ans")) {
@@ -83,6 +99,7 @@ public class ConnectionThread extends Thread {
                         }
                         // output the cracked answer
                         Manager.userConnection.out.println("answer from worker: " + command[1] + " " + command[2] + " " + command[3] + " " + command[4]);
+                        Manager.userConnection.out.flush();
                     }
                     // incoming user
                     else if (command.length == 3 && command[0].equalsIgnoreCase("user")) {
@@ -99,7 +116,7 @@ public class ConnectionThread extends Thread {
                         Manager.addWorker(command[1], Integer.parseInt(command[2]), this);
                     }
                     else {
-                        out.println(nextLine);
+                        out.println("invalid input");
                         out.flush();
                     }
                     System.out.println("local print: " + nextLine);

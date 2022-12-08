@@ -5,12 +5,14 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 public class User {
     protected static Socket userSocket;
     protected static BufferedReader userInput;
     protected static BufferedReader in;
     protected static PrintWriter out;
+    protected static HashMap<String, Long> responseTime;
     public static void main(String[] args) {
         // check the validity of arguments
         if (args.length != 2) {
@@ -37,14 +39,28 @@ public class User {
         }
         catch (UnknownHostException uhe) {uhe.printStackTrace(); return;}
         String inputLine;
+        responseTime = new HashMap<>();
         UserListener userListener = new UserListener();
         userListener.start();
+        System.out.println(Config.inputPrompt);
         while (true) {
             try {
-                System.out.println(Config.inputPrompt);
                 inputLine = userInput.readLine().trim();
-                out.println(inputLine);
-                out.flush();
+                if (inputLine.startsWith(Config.crackMsg)) {
+                    String cypher = inputLine.substring(6);
+                    if (responseTime.containsKey(cypher)) {
+                        System.out.println("You have submitted before: " + cypher);
+                    }
+                    else {
+                        responseTime.put(cypher, System.nanoTime());
+                        out.println(inputLine);
+                        out.flush();
+                    }
+                }
+                else {
+                    out.println(inputLine);
+                    out.flush();
+                }
                 // quit the program
                 if (inputLine.equalsIgnoreCase(Config.exitMsg)) {
                     in.close();
@@ -54,7 +70,7 @@ public class User {
                     return;
                 }
             }
-            catch (IOException ioe) {ioe.printStackTrace(); return;}
+            catch (IOException e) {e.printStackTrace(); return;}
         }
     }
 }

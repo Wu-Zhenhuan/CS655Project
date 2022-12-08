@@ -13,6 +13,8 @@ public abstract class Config {
     protected static final String crackMsg = "crack";
     // input prompt
     protected static final String inputPrompt = "Input command: ";
+    // white space
+    protected static final String whiteSpace = "\\s+";
     // alphabet
     protected static final char[] ALPHABET = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
