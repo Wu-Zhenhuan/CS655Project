@@ -8,6 +8,6 @@ git clone https://github.com/Wu-Zhenhuan/CS655Project.git
 echo "Compiling..."
 cd CS655Project
 cd src
-javac Manager.java
-echo "Launching Manager..."
-java Manager 31415
+javac Worker.java
+echo "Launching Worker..."
+java Worker
