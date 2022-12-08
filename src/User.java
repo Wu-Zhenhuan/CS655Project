@@ -82,7 +82,7 @@ public class User {
                     }
                 }
             }
-            catch (IOException e) {e.printStackTrace(); return;}
+            catch (IOException e) {return;}
         }
     }
     // there are only 4 valid commands: exit, info, del, crack

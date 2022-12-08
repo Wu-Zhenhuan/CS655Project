@@ -25,7 +25,7 @@ public abstract class Config {
     protected static final String userMsg = "user";
     protected static final String workerMsg = "worker";
     // invalid argument
-    protected static final String invalidArgMsg = "Invalid argument(s), please use the correct form: ";
+    protected static final String invalidArgMsg = "Invalid argument(s), please use the correct form: java ";
     // answer
     protected static final String ansMsg = "ans";
     public static void argInstruct(String exeName, String[] args) {

@@ -54,7 +54,6 @@ public class UserListener extends Thread {
                 }
             }
             catch (IOException ioe) {
-                ioe.printStackTrace();
                 return;
             }
         }
