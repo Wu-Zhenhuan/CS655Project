@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 
 // equivalent to server
@@ -37,7 +38,10 @@ public class Manager {
                 ConnectionThread connectionThread = new ConnectionThread(acceptSocket);
                 connectionThread.start();
             }
-            catch (IOException ioe) {ioe.printStackTrace(); return;}
+            catch (IOException e) {
+                System.exit(0);
+                return;
+            }
         }
     }
     // submit a job
