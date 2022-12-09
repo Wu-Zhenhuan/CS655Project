@@ -5,6 +5,8 @@
 
 * GENI slice name: KaizeZhenhuanProj
 
+* GENI configuration: https://github.com/Wu-Zhenhuan/CS655Project/blob/main/KaizeZhenhuanProj_request_rspec.xml
+
 * Demo video link: https://drive.google.com/drive/folders/1tvCm_xemiQUwYB-C3yn0RQf29UVbYPcS?usp=sharing
 
 To run the program, you need to login to the necessary nodes. The manager and user nodes are necessary, and, for instance, if you want to user 5 workers, you need to pick 5 worker nodes and login to them. For our experiment, we used PuTTY on Windows to conduct the tests.
