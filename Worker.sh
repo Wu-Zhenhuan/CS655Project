@@ -10,4 +10,4 @@ cd CS655Project
 cd src
 javac Worker.java
 echo "Launching Worker..."
-java Worker 127.0.0.1 31415
+java Worker 206.196.180.227 10000

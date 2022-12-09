@@ -10,4 +10,4 @@ cd CS655Project
 cd src
 javac Manager.java
 echo "Launching Manager..."
-java Manager 31415
+java Manager 10000
