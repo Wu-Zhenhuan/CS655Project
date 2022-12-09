@@ -5,7 +5,7 @@
 
 * GENI slice name: KaizeZhenhuanProj
 
-* GENI configuration: https://github.com/Wu-Zhenhuan/CS655Project/blob/main/KaizeZhenhuanProj_request_rspec.xml
+* GENI configuration (Rspec file): https://github.com/Wu-Zhenhuan/CS655Project/blob/main/KaizeZhenhuanProj_request_rspec.xml
 
 * Demo video link: https://drive.google.com/drive/folders/1tvCm_xemiQUwYB-C3yn0RQf29UVbYPcS?usp=sharing
 
@@ -68,3 +68,5 @@ On the user’s terminal, you can use the following commands based on your needs
 <code>exit</code>: quit the program and terminate the manager and workers
 
 To submit a cracking job to the workers, you need to specify your plain text first, then use a tool of your choice (e.g., https://www.md5hashgenerator.com/) to obtain its MD5 hash code. Thus, you can use the crack command to submit the workload.
+
+After you submit a job, you can submit another job before you receive the answer for the previous job, because a worker can handle multiple jobs in parallel.
